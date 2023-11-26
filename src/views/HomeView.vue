@@ -1,156 +1,98 @@
 <template>
   <main>
-    <div class="search-container">
-      <input v-model="searchTerm" placeholder="Digite o termo de busca" @keyup.enter="searchAlbums">
-      <button @click="searchAlbums">A
-        <FontAwesomeIcon icon="fa-solid fa-magnifying-glass" class="icon-color" />
-      </button>
-    </div>
-    {{ albums.length }}
-    <div class="albums-container">
-      <div class="album-card" v-for="(album, index) in albums" :key="index">
-        <img :src="album.images[0].url" alt="Album Cover" class="album-cover">
-        <h3 class="album-title">{{ album?.name }}</h3>
-        <p><span v-for="(artist, index) in album?.artists" :key="index">{{ artist.name }}</span></p>
-        <p class="album-title">{{ album?.release_date }}</p>
-        <p>Ver mais</p>
+    <div class="container">
+      <div class="search-container">
+        <input
+          v-model="searchTerm"
+          placeholder="Digite o termo de busca"
+          @keyup.enter="onSearch"
+        />
+        <button @click="onSearch">
+          <font-awesome-icon
+            :icon="['fas', 'magnifying-glass']"
+            class="icon-color"
+          />
+        </button>
       </div>
+      {{ albums.length }}
     </div>
-
-    <!-- <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Photo</th>
-          <th>Title</th>
-          <th>Release Date</th>
-          <th>Artists</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tr v-for="(album, index) in albums" :key="index">
-        <td>{{ index }}</td>
-        <img :src="album.images[0].url" alt="Album Cover" class="album-cover">
-        <td>{{ album?.name }}</td>
-        <td>{{ album?.release_date }}</td>
-        <td>{{ album?.artists[0].name }}</td>
-      </tr>
-    </table> -->
-    <!-- <div v-if="albums">
-
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Release Date</th>
-            <th>Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(album, index) in albums" :key="index">
-            <td>{{ album?.key }}</td>
-            <td>{{ album?.name }}</td>
-            <td>{{ album?.artists[0].name }}</td>
-            <td>{{ album?.release_date }}</td>
-           
-          </tr>
-        </tbody>
-      </table>
-    </div> -->
-
-    <!-- <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Title</th>
-          <th>Release Date</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(album, index) in albums" :key="index">
-          <td>{{ album?.index }}</td>
-          <td>
-            <div> <img :src="album.images[0].url" alt="Album Cover"></div>
+    <div class="albums-container">
+      <router-link
+        :to="{ path: `/album/${album.id}` }"
+        class="album-card"
+        v-for="(album, index) in albums"
+        :key="index"
+      >
+        <div class="mb-8px">
+          <div>
+            <img
+              :src="album.images[0].url"
+              alt="Album Cover"
+              class="album-cover"
+            />
+            <h3 class="album-title">{{ album?.name }}</h3>
+          </div>
+          <div>
             <div>
-              <div>{{ album?.name }}</div>
-              <div>{{ album?.artists[0].name }}</div>
+              <p class="artists-name line-break">
+                <span class="artists-name">
+                  {{ formatDate(album?.release_date) }}
+                </span>
+                <span class=""> • </span>
+                {{
+                  album.artists
+                    .slice(0, 4)
+                    .map((artist) => artist.name)
+                    .join(", ")
+                }}
+                <span v-if="album.artists.length > 2" class="artists-name"
+                  >e mais</span
+                >
+              </p>
             </div>
-          </td>
-          <td>{{ album.release_date }}</td>
-          <td>
-            <router-link :to="{ name: 'album-tracks', params: { albumId: album.id } }">Ver Faixas</router-link>
-
-          </td>
-        </tr>
-      </tbody>
-    </table> -->
+          </div>
+        </div>
+        <router-link class="detail" :to="{ path: `/album/${album.id}` }"
+          >Ver mais</router-link
+        >
+      </router-link>
+    </div>
   </main>
 </template>
 
 <script>
-import axios from 'axios'
-import qs from 'qs'
+import SpotifyApiService from "@/services/SpotifyApiService";
+import {formatDate} from "@/utils/dateUtils";
+
 export default {
-  name: 'home',
+  name: "HomePage",
   data() {
     return {
-      searchTerm: '',
-      clientId: '96a33de74f714569b7bd84d4da393733',
-      clientSecret: '3161844f4d70487282c9f444fc02379c',
+      searchTerm: "",
       albums: [],
-      accessToken: ''
-    }
+    };
   },
   methods: {
-    async getAccessToken() {
-      const auth_token = btoa(`${this.clientId}:${this.clientSecret}`);
-      const token_url = 'https://accounts.spotify.com/api/token';
-      const data = qs.stringify({ 'grant_type': 'client_credentials' });
-
-      let body = {
-        grant_type: 'client_credentials',
-        client_id: this.clientId,
-        client_secret: this.clientSecret
-      }
-      const response = await axios.post(token_url, data, {
-        headers: {
-          'Authorization': `Basic ${auth_token}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
-      return response.data.access_token;
-    },
-    async searchAlbums() {
-      const response = await axios.get(
-        `https://api.spotify.com/v1/search`,
-        {
-          params: {
-            q: this.searchTerm,
-            type: 'album',
-            limit: 10,
-          },
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        }
-      );
-      this.albums = response.data.albums.items;
-      console.log(this.albums)
-      return response.data.albums.items;
+    formatDate,
+    async onSearch() {
+      this.albums = await SpotifyApiService.searchAlbums(this.searchTerm);
     },
   },
-  async created() {
-    this.accessToken = await this.getAccessToken();
-  }
-
-}
+};
 </script>
 
 <style lang="scss" scoped>
 .icon-color {
-  color: #FCFCFC;
+  color: #fcfcfc;
+  &:hover {
+    color: #1ed760;
+  }
+}
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 }
 main {
   overflow-x: hidden;
@@ -174,31 +116,83 @@ main {
   overflow-x: scroll;
   gap: 24px;
   width: 80%;
+  min-height: 400px;
+  padding: 24px;
+}
+::-webkit-scrollbar {
+  height: 18px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #777;
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a8bbbf;
+}
+.album-title {
+  font-family: "Inter";
+  color: #fcfcfc;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
 
-.album-title {
-  margin-bottom: 4px;
-  font-family: 'Inter';
-  color: #FCFCFC;
+.artists-name {
+  color: var(--fg-default-065, rgba(252, 252, 252, 0.65));
+  font-family: Inter;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.line-break {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Número desejado de linhas a serem exibidas */
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
 
 .search-container {
   border-radius: 12px;
   border: 1px solid var(--action-border, rgba(235, 235, 255, 0.05));
-  background: #1F1F22;
+  background: #1f1f22;
   width: 480px;
   height: 40px;
   display: flex;
   align-items: center;
-
+  &:focus {
+    border-color: #1ed760 !important;
+    outline: 1px solid #1ed760;
+    box-shadow: 0 0 8px #1ed760;
+  }
   input {
     border-radius: 12px 0 0 12px;
     padding: 8px;
-    color: #FCFCFC;
+    color: #fcfcfc;
     height: 100%;
     width: 90%;
     background: transparent;
     border: none;
+    &:focus {
+      border-color: #1ed760 !important;
+      outline: 1px solid #1ed760;
+      box-shadow: 0 0 4px #1ed760;
+    }
   }
 
   button {
@@ -207,5 +201,36 @@ main {
     background: transparent;
     border: none;
   }
+}
+
+.detail {
+  color: var(--fg-subtle, #9898a6);
+  font-family: Inter;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 12px;
+  text-transform: uppercase;
+  text-decoration: none;
+  &:hover {
+    color: #1ed760;
+  }
+}
+
+.album-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: #181818;
+  padding: 16px;
+  justify-content: space-between;
+  text-decoration: none !important;
+  &:hover {
+    background: #282828;
+  }
+}
+
+.mb-8px {
+  margin-bottom: 8px;
 }
 </style>
