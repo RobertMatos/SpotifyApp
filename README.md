@@ -1,5 +1,5 @@
 # Hands-On! 
-Neste desafio, tive a oportunidade de demonstrar suas habilidades construindo uma aplicação frontend que interage com a [API do Spotify](https://developer.spotify.com/documentation/web-api/), permitindo buscar álbuns, visualizar suas faixas e acessar informações detalhadas.
+Neste desafio, tive a oportunidade de demonstrar as minhas habilidades construindo uma aplicação frontend que interage com a [API do Spotify](https://developer.spotify.com/documentation/web-api/), permitindo buscar álbuns, visualizar suas faixas e acessar informações detalhadas.
 
 ## Tecnologias/Ferramentas
 
