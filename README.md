@@ -31,15 +31,15 @@ Neste desafio, tive a oportunidade de demonstrar suas habilidades construindo um
 
 2. ***Instale as Dependências:***
 
-```sh
-npm install
-```
+    ```sh
+    npm install
+    ```
 
 3. ***Execute a Aplicação:***
 
-```sh
-npm run dev
-```
+    ```sh
+    npm run dev
+    ```
 
 4. ***Acesse a Aplicação:***
 Abra o navegador e visite http://localhost:5174.
